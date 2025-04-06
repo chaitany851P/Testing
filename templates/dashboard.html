@@ -1,0 +1,388 @@
+{% extends 'base.html' %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Inner Light Advisor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .course-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .tab-content {
+            transition: opacity 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-900 via-gray-800 to-gray-600 text-white min-h-screen font-sans">
+    <div class="header bg-gray-900 py-4 text-center">
+        <h1 class="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">Welcome {{ current_user.username }}!</h1>
+    </div>
+
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        {% if current_user.role == 'admin' %}
+        <!-- Admin Dashboard -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Total Courses Card -->
+            <div class="bg-white text-gray-900 rounded-xl shadow-lg p-6 transform transition duration-300 hover:shadow-xl">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-semibold text-indigo-900">Total Courses</h3>
+                        <p class="text-3xl font-bold mt-2">{{ stats.total_courses }}</p>
+                        <p class="text-sm text-gray-500 mt-1">{{ stats.pending_courses }} pending</p>
+                    </div>
+                    <div class="bg-indigo-100 p-4 rounded-full">
+                        <i class="bi bi-book text-indigo-600 text-2xl"></i>
+                    </div>
+                </div>
+                <a href="{{ url_for('courses') }}" class="mt-4 inline-flex items-center text-indigo-600 hover:text-indigo-800 font-medium">
+                    View All <i class="bi bi-arrow-right ml-2"></i>
+                </a>
+            </div>
+
+            <!-- Total Teachers Card -->
+            <div class="bg-white text-gray-900 rounded-xl shadow-lg p-6 transform transition duration-300 hover:shadow-xl">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-semibold text-indigo-900">Total Teachers</h3>
+                        <p class="text-3xl font-bold mt-2">{{ stats.total_teachers }}</p>
+                        <p class="text-sm text-gray-500 mt-1">{{ stats.active_teachers }} active</p>
+                    </div>
+                    <div class="bg-indigo-100 p-4 rounded-full">
+                        <i class="bi bi-person-badge text-indigo-600 text-2xl"></i>
+                    </div>
+                </div>
+                
+            </div>
+
+            <!-- Total Students Card -->
+            <div class="bg-white text-gray-900 rounded-xl shadow-lg p-6 transform transition duration-300 hover:shadow-xl">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-semibold text-indigo-900">Total Students</h3>
+                        <p class="text-3xl font-bold mt-2">{{ stats.total_students }}</p>
+                        <p class="text-sm text-gray-500 mt-1">{{ stats.active_students }} active</p>
+                    </div>
+                    <div class="bg-indigo-100 p-4 rounded-full">
+                        <i class="bi bi-people text-indigo-600 text-2xl"></i>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+
+        <!-- Pending Approvals Section -->
+        <div class="mt-8">
+            <h2 class="text-lg sm:text-xl md:text-2xl font-semibold mb-4 sm:mb-6">Pending Approvals</h2>
+            {% if pending_courses %}
+            <div class="course-list space-y-6">
+                {% for course in pending_courses %}
+                <div class="course-card bg-white text-gray-900 rounded-lg shadow-md overflow-hidden transition-all duration-300 max-w-full sm:max-w-4xl mx-auto">
+                    <div class="flex flex-col sm:flex-row">
+                        <!-- Thumbnail with fallback -->
+                        <div class="w-full sm:w-40 md:w-48 h-36 sm:h-32 md:h-40 bg-gray-200 overflow-hidden">
+                            <img src="{{ course.thumbnail_url }}" 
+                                 alt="{{ course.name }} thumbnail"
+                                 class="w-full h-full object-cover"
+                                 onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/default_thumbnail.jpg') }}'">
+                        </div>
+                        
+                        <div class="course-content p-4 sm:p-6 flex-1">
+                            <h3 class="course-title text-base sm:text-lg md:text-xl font-bold mb-2 text-indigo-900">{{ course.name }}</h3>
+                            <p class="course-description text-gray-700 text-sm sm:text-base mb-4 line-clamp-2">{{ course.description }}</p>
+                            <div class="flex flex-wrap gap-3">
+                                <a href="{{ url_for('course_detail', course_id=course.id) }}" 
+                                   class="inline-flex items-center px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-indigo-600 to-indigo-800 text-white text-sm sm:text-base font-semibold rounded-lg shadow-md hover:from-indigo-700 hover:to-indigo-900 transition-all duration-200">
+                                    <i class="bi bi-eye-fill mr-1 sm:mr-2"></i> Review Course
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="bg-gray-800 rounded-lg p-8 text-center">
+                <i class="bi bi-check-circle text-4xl text-green-400 mb-4"></i>
+                <p class="text-gray-300">No courses pending approval</p>
+            </div>
+            {% endif %}
+        </div>
+
+        {% elif current_user.role == 'student' %}
+        <!-- Student Dashboard -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+
+
+        </div>
+
+        <!-- Enrolled Courses Section -->
+        <div class="mb-8">
+            <h2 class="text-lg sm:text-xl md:text-2xl font-semibold mb-4 sm:mb-6">Enrolled Courses</h2>
+            {% if enrolled_courses %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for course in enrolled_courses %}
+                <div class="course-card bg-white text-gray-900 rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg">
+                    <!-- Thumbnail with fallback -->
+                    <div class="w-full h-48 bg-gray-200 overflow-hidden">
+                        <img src="{{ course.thumbnail_url }}"
+                             alt="{{ course.name }} thumbnail"
+                             class="w-full h-full object-cover"
+                             onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/default_thumbnail.jpg') }}'">
+                    </div>
+
+                    <div class="p-4">
+                        <h3 class="text-lg font-bold mb-2 text-indigo-900 line-clamp-1">{{ course.name }}</h3>
+                        <p class="text-gray-700 text-sm mb-4 line-clamp-2">{{ course.description }}</p>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+                            <div class="bg-indigo-600 h-2.5 rounded-full" style="width: {{ course.progress.percentage }}%"></div>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-4">{{ course.progress.completed_chapters }} / {{ course.progress.total_chapters }} chapters completed</p>
+                        <a href="{{ url_for('view_chapter', course_id=course.id) }}"
+                           class="w-full inline-flex justify-center items-center px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-md hover:bg-indigo-700 transition-colors duration-200">
+                            Continue Learning <i class="bi bi-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="bg-gray-800 rounded-lg p-8 text-center">
+                <i class="bi bi-book text-4xl text-blue-400 mb-4"></i>
+                <p class="text-gray-300 mb-4">You haven't enrolled in any courses yet</p>
+                <a href="{{ url_for('courses') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-200">
+                    Browse Courses <i class="bi bi-arrow-right ml-2"></i>
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Upcoming Live Classes Section -->
+        <div class="mb-8">
+            <h2 class="text-lg sm:text-xl md:text-2xl font-semibold mb-4 sm:mb-6">Upcoming Live Classes</h2>
+            {% if live_classes and live_classes|length > 0 %}
+            <div class="space-y-4">
+                {% for live_class in live_classes %}
+                <div class="bg-indigo-100 text-gray-900 rounded-lg shadow-md p-4">
+                    <h3 class="font-bold text-indigo-900">{{ live_class.title }}</h3>
+                    <p class="text-sm text-gray-600 mt-1">{{ live_class.course_name }}</p>
+                    <p class="text-sm text-gray-600 mt-1">
+                        <i class="bi bi-calendar-event mr-1"></i> {{ live_class.scheduled_time }}
+                    </p>
+                    <p class="text-sm text-gray-600 mt-1">
+                        <i class="bi bi-clock mr-1"></i> Duration: {{ live_class.duration }} minutes
+                    </p>
+                    <div class="mt-3">
+                        <a href="{{ live_class.meeting_link }}" target="_blank"
+                           class="inline-flex items-center px-3 py-1 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700 transition-colors duration-200">
+                            <i class="bi bi-camera-video mr-1"></i> Join Class
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="bg-gray-800 rounded-lg p-8 text-center">
+                <i class="bi bi-camera-video-off text-4xl text-blue-400 mb-4"></i>
+                <p class="text-gray-300">No scheduled live classes</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <hr class="border-gray-700 my-6 sm:my-8">
+
+        <!-- Completed Courses Section -->
+        <div class="mt-8">
+            <h2 class="text-lg sm:text-xl md:text-2xl font-semibold mb-4 sm:mb-6">Completed Courses</h2>
+            {% if completed_courses %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for course in completed_courses %}
+                <div class="course-card bg-white text-gray-900 rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg">
+                    <!-- Thumbnail with fallback -->
+                    <div class="w-full h-48 bg-gray-200 overflow-hidden">
+                        <img src="{{ course.thumbnail_url }}"
+                             alt="{{ course.name }} thumbnail"
+                             class="w-full h-full object-cover"
+                             onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/default_thumbnail.jpg') }}'">
+                    </div>
+
+                    <div class="p-4">
+                        <h3 class="text-lg font-bold mb-2 text-indigo-900 line-clamp-1">{{ course.name }}</h3>
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-sm text-gray-600">
+                                {{ course.progress.percentage }}% Complete
+                            </span>
+                            <span class="text-sm bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                                Completed
+                            </span>
+                        </div>
+                        <a href="{{ url_for('certificate', course_id=course.id) }}"
+                           class="w-full inline-flex justify-center items-center px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-md hover:bg-green-700 transition-colors duration-200">
+                            View Certificate <i class="bi bi-award ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="bg-gray-800 rounded-lg p-8 text-center">
+                <i class="bi bi-emoji-frown text-4xl text-yellow-400 mb-4"></i>
+                <p class="text-gray-300">You haven't completed any courses yet</p>
+            </div>
+            {% endif %}
+        </div>
+
+        {% elif current_user.role == 'teacher' %}
+        <!-- Teacher Dashboard -->
+        <div class="mb-8">
+            <h2 class="text-lg sm:text-xl md:text-2xl font-semibold mb-4 sm:mb-6">Your Courses</h2>
+            {% if courses %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for course in courses %}
+                <div class="course-card bg-white text-gray-900 rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg">
+                    <!-- Thumbnail with fallback -->
+                    <div class="w-full h-48 bg-gray-200 overflow-hidden">
+                        <img src="{{ course.thumbnail_url }}"
+                             alt="{{ course.name }} thumbnail"
+                             class="w-full h-full object-cover"
+                             onerror="this.onerror=null;this.src='{{ url_for('static', filename='img/default_thumbnail.jpg') }}'">
+                    </div>
+
+                    <div class="p-4">
+                        <h3 class="text-lg font-bold mb-2 text-indigo-900 line-clamp-1">{{ course.name }}</h3>
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-sm text-gray-600">
+                                {{ course.students }} students enrolled
+                            </span>
+                            <span class="text-sm px-2 py-1 rounded-full
+                                {% if course.status == 'approved' %}bg-green-100 text-green-800
+                                {% elif course.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                {% else %}bg-red-100 text-red-800{% endif %}">
+                                {{ course.status|title }}
+                            </span>
+                        </div>
+                        <a href="{{ url_for('course_detail', course_id=course.id) }}"
+                           class="w-full inline-flex justify-center items-center px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-md hover:bg-indigo-700 transition-colors duration-200">
+                            Manage Course <i class="bi bi-gear ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="bg-gray-800 rounded-lg p-8 text-center">
+                <i class="bi bi-book text-4xl text-blue-400 mb-4"></i>
+                <p class="text-gray-300 mb-4">You haven't created any courses yet</p>
+                <a href="{{ url_for('add_course') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-200">
+                    Create New Course <i class="bi bi-plus-lg ml-2"></i>
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <hr class="border-gray-700 my-6 sm:my-8">
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Upcoming Tasks -->
+            <div>
+                <h2 class="text-lg sm:text-xl md:text-2xl font-semibold mb-4 sm:mb-6">Upcoming Tasks</h2>
+                {% if upcoming_tasks %}
+                <div class="space-y-4">
+                    {% for task in upcoming_tasks %}
+                    <div class="bg-white text-gray-900 rounded-lg shadow-md p-4">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-bold text-indigo-900">{{ task.title }}</h3>
+                                <p class="text-sm text-gray-600 mt-1">{{ task.description }}</p>
+                                <p class="text-xs text-gray-500 mt-2">
+                                    <i class="bi bi-calendar-event mr-1"></i> Due: {{ task.due_date.strftime('%b %d, %Y') }}
+                                </p>
+                            </div>
+                            <div class="flex space-x-2">
+                                <a href="{{ url_for('edit_task', task_id=task.id) }}" class="text-blue-600 hover:text-blue-800">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                                <form action="{{ url_for('delete_task', task_id=task.id) }}" method="POST" class="inline">
+                                    <button type="submit" class="text-red-600 hover:text-red-800" onclick="return confirm('Are you sure?')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="bg-gray-800 rounded-lg p-8 text-center">
+                    <i class="bi bi-check-circle text-4xl text-green-400 mb-4"></i>
+                    <p class="text-gray-300">No upcoming tasks</p>
+                </div>
+                {% endif %}
+                <div class="mt-4">
+                    <a href="{{ url_for('add_task') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-200">
+                        <i class="bi bi-plus-lg mr-2"></i> Add New Task
+                    </a>
+                </div>
+            </div>
+
+            <!-- Live Classes -->
+            <div>
+                <h2 class="text-lg sm:text-xl md:text-2xl font-semibold mb-4 sm:mb-6">Live Classes</h2>
+                {% if live_classes %}
+                <div class="space-y-4">
+                    {% for class in live_classes %}
+                    <div class="bg-indigo-100 text-gray-900 rounded-lg shadow-md p-4">
+                        <h3 class="font-bold text-indigo-900">{{ class.chapter_title }}</h3>
+                        <p class="text-sm text-gray-600 mt-1">
+                            <i class="bi bi-calendar-event mr-1"></i> {{ class.date }} at {{ class.time }}
+                        </p>
+                        <div class="mt-3">
+                            <a href="{{ class.meeting_link }}" class="inline-flex items-center px-3 py-1 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700 transition-colors duration-200">
+                                <i class="bi bi-camera-video mr-1"></i> Join Class
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="bg-gray-800 rounded-lg p-8 text-center">
+                    <i class="bi bi-camera-video-off text-4xl text-blue-400 mb-4"></i>
+                    <p class="text-gray-300">No scheduled live classes</p>
+                </div>
+                {% endif %}
+                <div class="mt-4">
+                    <a href="{{ url_for('schedule_live_class') }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-200">
+                        <i class="bi bi-plus-lg mr-2"></i> Schedule New Class
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        // Simple animation for course cards
+        document.querySelectorAll('.course-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-5px)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = '';
+            });
+        });
+
+        // Handle image loading errors
+        document.querySelectorAll('img').forEach(img => {
+            img.addEventListener('error', function() {
+                this.src = '{{ url_for('static', filename='img/default_thumbnail.jpg') }}';
+            });
+        });
+    </script>
+</body>
+</html>
+{% endblock %}
