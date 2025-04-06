@@ -6,7 +6,7 @@ from email.message import EmailMessage
 from random import random
 from venv import logger
 import random
-from utils import characters
+import characters
 import firebase_admin
 import length
 from pytz import utc
