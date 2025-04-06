@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inner Light Advisor - Courses to Approve</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="icon" href="{{ url_for('static', filename='img/Logo.jpeg') }}" type="image/x-icon">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-indigo-900 via-gray-800 to-gray-600 text-white min-h-screen font-sans">
+    <div class="container mx-auto px-2 py-6 sm:px-4 sm:py-8 md:px-6 lg:px-8">
+        <header class="text-center py-8 sm:py-10">
+            <img src="{{ url_for('static', filename='img/Logo.jpeg') }}" alt="Inner Light Advisor Logo" class="mx-auto mb-4 w-24 sm:w-32 rounded-full shadow-md">
+            <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold uppercase tracking-tight text-white drop-shadow-md">Courses to Approve</h1>
+            <p class="text-base sm:text-lg md:text-xl text-gray-200 mt-2 font-light">Review and Manage Course Submissions</p>
+        </header>
+
+        <section class="space-y-6">
+            {% if courses_to_approve %}
+                {% for course in courses_to_approve %}
+                    <div class="bg-white text-gray-900 rounded-2xl shadow-xl p-4 sm:p-6 transform hover:shadow-2xl transition duration-300">
+                        <h2 class="text-lg sm:text-xl md:text-2xl font-bold text-indigo-900 mb-3 sm:mb-4 break-words">{{ course.name }}</h2>
+                        <div class="text-sm sm:text-base space-y-2">
+                            <p><strong>Description:</strong> {{ course.description }}</p>
+                            <p><strong>Level:</strong> {{ course.level }}</p>
+                            <p><strong>Domain:</strong> {{ course.domain }}</p>
+                            <p><strong>Language:</strong> {{ course.language }}</p>
+                            <p><strong>Payment:</strong> {{ course.payment }} {% if course.payment == 'Paid' %}- ₹{{ course.price }}{% endif %}</p>
+                            <p><strong>Mode:</strong> {{ course.mode_of_class }}</p>
+                            <p><strong>Learner Type:</strong> {{ course.learner_type }}</p>
+                            <p><strong>Teacher:</strong> {{ course.teacher_name }}</p>
+                            {% if course.thumbnail_img %}
+                                <p><strong>Thumbnail:</strong> <a href="{{ course.thumbnail_img }}" target="_blank" class="text-indigo-600 hover:underline">View Image</a></p>
+                            {% endif %}
+                            {% if course.temp_video %}
+                                <p><strong>Sample Video:</strong> <a href="{{ course.temp_video }}" target="_blank" class="text-indigo-600 hover:underline">View Video</a></p>
+                            {% endif %}
+                            <h3 class="text-base sm:text-lg font-semibold text-indigo-900 mt-4">Chapters</h3>
+                            <ul class="list-disc pl-5 space-y-2">
+                                {% for chapter in course.chapters %}
+                                    <li>
+                                        <strong>{{ chapter.title }}</strong>: {{ chapter.description }}<br>
+                                        {% if chapter.course_link %}
+                                            <span>Link: <a href="{{ chapter.course_link }}" target="_blank" class="text-indigo-600 hover:underline">{{ chapter.course_link }}</a></span><br>
+                                        {% endif %}
+                                        {% if chapter.meeting_link %}
+                                            <span>Meeting: {{ chapter.meeting_link }} ({{ chapter.date }} {{ chapter.time }})</span>
+                                        {% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="mt-4 flex flex-col sm:flex-row gap-2 sm:gap-4">
+                            <a href="{{ url_for('approve_course', course_id=course.id) }}" class="inline-block py-2 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm sm:text-base font-semibold transition duration-200">Approve</a>
+                            <button onclick="toggleRejectBox('rejectBox-{{ course.id }}')" class="inline-block py-2 px-4 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm sm:text-base font-semibold transition duration-200">Reject</button>
+                        </div>
+                        <!-- Rejection Remark Box (Hidden by Default) -->
+                        <div id="rejectBox-{{ course.id }}" class="mt-4 hidden">
+                            <form method="POST" action="{{ url_for('reject_course', course_id=course.id) }}" class="space-y-4">
+                                <label for="rejection_reason-{{ course.id }}" class="block text-sm sm:text-base font-medium text-gray-700">Reason for Rejection</label>
+                                <textarea id="rejection_reason-{{ course.id }}" name="rejection_reason" rows="3" class="w-full px-3 sm:px-4 py-2 border border-gray-200 rounded-lg text-gray-800 text-sm sm:text-base focus:ring-2 focus:ring-red-400 focus:border-red-500 outline-none transition-all duration-200 bg-gray-50 hover:bg-white" placeholder="Provide feedback for the teacher..." required></textarea>
+                                <div class="flex justify-end gap-2">
+                                    <button type="submit" class="py-2 px-4 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm sm:text-base font-semibold transition duration-200">Submit Rejection</button>
+                                    <button type="button" onclick="toggleRejectBox('rejectBox-{{ course.id }}')" class="py-2 px-4 bg-gray-600 text-white rounded-lg hover:bg-gray-700 text-sm sm:text-base font-semibold transition duration-200">Cancel</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="bg-white text-gray-900 rounded-2xl shadow-xl p-4 sm:p-6 text-center">
+                    <p class="text-lg sm:text-xl font-semibold text-indigo-900">No courses awaiting approval!</p>
+                    <p class="text-sm sm:text-base text-gray-700 mt-2">Check back later or enjoy a coffee break! ☕</p>
+                </div>
+            {% endif %}
+        </section>
+
+        <div class="text-center mt-6 sm:mt-8">
+            <a href="{{ url_for('admin_dashboard') }}" class="inline-block py-2 sm:py-3 px-4 sm:px-6 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition duration-200 text-sm sm:text-base">Back to Dashboard</a>
+        </div>
+    </div>
+
+    <footer class="bg-gray-900 text-gray-300 py-6 sm:py-8 mt-6 sm:mt-8">
+        <div class="container mx-auto px-2 sm:px-4">
+            <p class="text-center text-xs sm:text-sm">© 2025 Inner Light Advisor. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        function toggleRejectBox(boxId) {
+            const box = document.getElementById(boxId);
+            box.classList.toggle('hidden');
+        }
+    </script>
+</body>
+</html>

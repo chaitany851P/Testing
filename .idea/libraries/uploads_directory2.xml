@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="uploads_directory2">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/static/uploads/uploads_directory.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
