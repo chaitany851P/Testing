@@ -1,1 +1,41 @@
+# === Node / JS related ===
+node_modules/
 .env
+.env.local
+.env.*.local
+
+# === Python (optional) ===
+__pycache__/
+*.py[cod]
+
+# === VS Code ===
+.vscode/
+
+# === JetBrains IDEs ===
+.idea/
+
+# === macOS ===
+.DS_Store
+
+# === Logs ===
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# === OS generated ===
+Thumbs.db
+Desktop.ini
+
+# === Sensitive files (your case) ===
+firebase_config.json
+static/js/j.js
+
+# === Optional: ignore video/media files ===
+*.mp4
+*.mov
+*.avi
+*.mkv
+
+# === Git LFS ===
+.gitattributes
