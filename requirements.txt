@@ -1,17 +1,2 @@
-# Core Flask and related packages
 Flask==2.3.3
-Werkzeug==2.3.7
-Flask-Login==0.6.2
-Flask-Mail==0.9.1
-
-# Firebase for Firestore
-firebase-admin==6.2.0
-
-# Timezone handling
-pytz==2023.3
-
-# Production server for Render
 gunicorn==20.1.0
-
-characters
-length
