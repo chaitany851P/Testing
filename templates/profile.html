@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="bg-gradient-to-br from-indigo-900 via-gray-800 to-gray-600 text-white min-h-screen font-sans">
+    <div class="container mx-auto px-4 py-8">
+        <div class="bg-white text-gray-900 rounded-2xl shadow-xl p-6 sm:p-8 mt-6">
+            <form method="POST" enctype="multipart/form-data" class="space-y-6">
+                <!-- Profile Header -->
+                <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+                    <!-- Profile Image -->
+                    <div class="flex-shrink-0 relative">
+                        {% if profile_img_src %}
+                        <img src="{{ profile_img_src }}"
+                             alt="Profile Image"
+                             class="w-24 h-24 sm:w-32 sm:h-32 rounded-full object-cover shadow-md border-4 border-indigo-200">
+                        {% else %}
+                        <div class="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gray-200 flex items-center justify-center border-4 border-indigo-200">
+                            <span class="text-gray-500 text-sm">No Image</span>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- User Info (Editable with Buttons) -->
+                    <div class="flex-1 space-y-4">
+                        <div class="flex items-center gap-2">
+                            <span class="font-semibold text-indigo-700">Name:</span>
+                            <span id="name-display" class="text-sm sm:text-base">{{ current_user.name }}</span>
+                            <input type="text" name="name" id="name-input" value="{{ current_user.name }}"
+                                   class="hidden w-full px-3 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            <button type="button" onclick="toggleEdit('name')" class="edit-btn text-indigo-600 hover:text-indigo-800">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-semibold text-indigo-700">Username:</span>
+                            <span id="username-display" class="text-sm sm:text-base">{{ current_user.username }}</span>
+                            <input type="text" name="username" id="username-input" value="{{ current_user.username }}"
+                                   class="hidden w-full px-3 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            <button type="button" onclick="toggleEdit('username')" class="edit-btn text-indigo-600 hover:text-indigo-800">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-semibold text-indigo-700">Email:</span>
+                            <span id="email-display" class="text-sm sm:text-base">{{ current_user.email }}</span>
+                            <input type="email" name="email" id="email-input" value="{{ current_user.email }}"
+                                   class="hidden w-full px-3 py-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            <button type="button" onclick="toggleEdit('email')" class="edit-btn text-indigo-600 hover:text-indigo-800">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </div>
+                        <p class="text-sm sm:text-base"><span class="font-semibold text-indigo-700">Role:</span> {{ current_user.role|capitalize }}</p>
+                        <p class="text-sm sm:text-base"><span class="font-semibold text-indigo-700">Learning Style:</span> {{ current_user.learning_style }}</p>
+                    </div>
+                </div>
+
+                <!-- Teacher Specific Images -->
+                {% if current_user.role == 'teacher' %}
+                <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Signature (Smaller) -->
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="font-semibold text-indigo-800 mb-2">Signature</h3>
+                        {% if signature_img_src %}
+                        <img src="{{ signature_img_src }}"
+                             alt="Signature"
+                             class="w-20 h-10 object-contain border border-gray-300 rounded">
+                        {% else %}
+                        <div class="w-20 h-10 bg-gray-100 flex items-center justify-center rounded border border-dashed border-gray-400">
+                            <span class="text-gray-500 text-xs">No signature</span>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- UPI QR (Already Small) -->
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="font-semibold text-indigo-800 mb-2">UPI QR Code</h3>
+                        {% if upi_qr_img_src %}
+                        <img src="{{ upi_qr_img_src }}"
+                             alt="UPI QR Code"
+                             class="w-20 h-20 object-cover border border-gray-300 rounded">
+                        {% else %}
+                        <div class="w-20 h-20 bg-gray-100 flex items-center justify-center rounded border border-dashed border-gray-400">
+                            <span class="text-gray-500 text-xs">No QR</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Educational Information Display -->
+                <div class="mt-6 bg-gray-50 p-4 rounded-lg">
+                    <h3 class="font-semibold text-indigo-800 mb-2">Educational Background</h3>
+                    {% if user.education %}
+                    <ul class="space-y-2">
+                        {% for edu in user.education %}
+                        <li class="text-sm sm:text-base">
+                            <span class="font-semibold text-indigo-700">{{ edu.degree if edu is mapping else edu }}</span> 
+                            {% if edu is mapping %}
+                            from <span class="text-gray-700">{{ edu.institution }}</span> 
+                            ({{ edu.year }})
+                            {% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="text-gray-500">No educational information added yet.</p>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Upload and Edit Form -->
+                <div class="mt-8 space-y-6">
+                    <!-- Profile Image Upload -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Update Profile Image</label>
+                        <input type="file" name="img" accept="image/*"
+                               class="block w-full text-sm text-gray-500
+                                      file:mr-4 file:py-2 file:px-4
+                                      file:rounded-md file:border-0
+                                      file:text-sm file:font-semibold
+                                      file:bg-indigo-50 file:text-indigo-700
+                                      hover:file:bg-indigo-100">
+                        <p class="text-xs text-gray-500 mt-1">Max 1MB</p>
+                    </div>
+
+                    {% if current_user.role == 'teacher' %}
+                    <!-- Signature Upload -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Update Signature</label>
+                        <input type="file" name="signature" accept="image/*"
+                               class="block w-full text-sm text-gray-500
+                                      file:mr-4 file:py-2 file:px-4
+                                      file:rounded-md file:border-0
+                                      file:text-sm file:font-semibold
+                                      file:bg-indigo-50 file:text-indigo-700
+                                      hover:file:bg-indigo-100">
+                        <p class="text-xs text-gray-500 mt-1">Max 1MB</p>
+                    </div>
+
+                    <!-- UPI QR Upload -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Update UPI QR Code</label>
+                        <input type="file" name="upi_qr" accept="image/*"
+                               class="block w-full text-sm text-gray-500
+                                      file:mr-4 file:py-2 file:px-4
+                                      file:rounded-md file:border-0
+                                      file:text-sm file:font-semibold
+                                      file:bg-indigo-50 file:text-indigo-700
+                                      hover:file:bg-indigo-100">
+                        <p class="text-xs text-gray-500 mt-1">Max 1MB</p>
+                    </div>
+
+                    <!-- Educational Information Input -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Degree</label>
+                            <input type="text" name="degree" 
+                                   class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Institution</label>
+                            <input type="text" name="institution" 
+                                   class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Year</label>
+                            <input type="text" name="year" 
+                                   class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <button type="submit"
+                            class="w-full sm:w-auto px-6 py-2 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors duration-200">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleEdit(field) {
+        const display = document.getElementById(`${field}-display`);
+        const input = document.getElementById(`${field}-input`);
+        const button = document.querySelector(`button[onclick="toggleEdit('${field}')"]`);
+
+        if (display.classList.contains('hidden')) {
+            // Switch to display mode
+            display.textContent = input.value;
+            display.classList.remove('hidden');
+            input.classList.add('hidden');
+            button.innerHTML = '<i class="fas fa-edit"></i>';
+        } else {
+            // Switch to edit mode
+            display.classList.add('hidden');
+            input.classList.remove('hidden');
+            button.innerHTML = '<i class="fas fa-save"></i>';
+        }
+    }
+</script>
+
+{% endblock %}
